@@ -11,7 +11,7 @@ router.get('/applications/driver/:id', applicationController.getApplDriver)
 router.get('/applications/new/boss', checkAuth, applicationController.getNewApplBoss)
 //router.post('/applications/approve', applicationApproveValidation, applicationController.approveAppl)
 router.post('/applications', checkAuth, applicationCreateValidation, applicationController.createAppl)
-router.patch('/applications/approve/:id', checkAuth, applicationController.approveAppl)
+router.patch('/applications/approve/:id', applicationController.approveAppl)
 router.patch('/applications/:id', checkAuth, applicationController.updateAppl)
 router.delete('/applications/:id', checkAuth, applicationController.deleteAppl)
 
