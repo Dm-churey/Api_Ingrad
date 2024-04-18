@@ -70,6 +70,9 @@ class AplicationController {
         try {
             //const applications = await db.query("SELECT application_items.*, to_char(date, 'DD-MM-YYYY') AS date, to_char(created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, users.id AS user_id, users.name AS user_name, users.lastname AS user_lastname, users.patronymic AS user_patronymic FROM application_items INNER JOIN users ON application_items.user_id = users.id")
             const applications = await db.query("SELECT a.id, a.purpose, a.address, a.date, a.start_time, a.finish_time, a.user_id, a.comment, a.approve, a.status, a.created_at, to_char(date, 'DD-MM-YYYY') AS date, to_char(created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic FROM application a JOIN users u ON a.user_id = u.id WHERE a.approve = FALSE")
+            if (applications.rows == '') {
+                return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
+            }
             res.json(applications.rows)
         } catch (err) {
             console.log(err)
@@ -100,6 +103,9 @@ class AplicationController {
         try {
             //const applications = await db.query("SELECT a.*, ai.purpose, ai.address, ai.date, ai.start_time, ai.finish_time, ai.user_id, ai.comment, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic, to_char(ai.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at FROM applications a JOIN application_items ai ON a.appl_items_id = ai.id JOIN  users d ON a.driver_id = d.id JOIN users u ON ai.user_id = u.id")
             const applications = await db.query("SELECT a.*, to_char(date, 'DD-MM-YYYY') AS date, to_char(created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE")
+            if (applications.rows == '') {
+                return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
+            }
             res.json(applications.rows)
         } catch (err) {
             console.log(err)
@@ -157,8 +163,8 @@ class AplicationController {
     async deleteAppl(req, res){
         try {
             const id = req.params.id
-            const appl = await db.query('DELETE FROM application where id = $1', [id])
-            if (!appl.rows[0]) {
+            const appl = await db.query('DELETE FROM application where id = $1 RETURNING *', [id])
+            if (appl.rows.length === 0) {
                 return res.status(404).json({message: 'Заявка не найдена'})
             }
             
@@ -166,7 +172,7 @@ class AplicationController {
             
         } catch (err) {
             console.log(err)
-            res.status(500).json({message: 'Не удалось удалить заявку'})
+            return res.status(500).json({message: 'Не удалось удалить заявку'})
         }
     }
 

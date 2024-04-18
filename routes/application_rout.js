@@ -13,6 +13,6 @@ router.get('/applications/new/boss', checkAuth, applicationController.getNewAppl
 router.post('/applications', checkAuth, applicationCreateValidation, applicationController.createAppl)
 router.patch('/applications/approve/:id', applicationController.approveAppl)
 router.patch('/applications/:id', checkAuth, applicationController.updateAppl)
-router.delete('/applications/:id', checkAuth, applicationController.deleteAppl)
+router.delete('/applications/:id', applicationController.deleteAppl)
 
 module.exports = router
