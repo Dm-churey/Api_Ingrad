@@ -39,7 +39,7 @@ class AplicationController {
     async getMyAppl(req, res) { //Получение согласованных заявок заказчиком с заданным id
         try {
             const id = req.params.id
-            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.user_id = $1", [id])
+            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано' AND a.user_id = $1", [id])
             //const applications = await db.query("SELECT a.*, ai.purpose, ai.address, ai.date, ai.start_time, ai.finish_time, ai.user_id, ai.comment, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic, to_char(ai.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at FROM applications a JOIN application_items ai ON a.appl_items_id = ai.id JOIN  users d ON a.driver_id = d.id JOIN users u ON ai.user_id = u.id WHERE user_id = $1", [id])
             if (applications.rows == '') {
                 return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
@@ -54,7 +54,7 @@ class AplicationController {
     async getApplDriver(req, res) { //Получение согласованных заявок назначеным водителем с заданным id
         try {
             const id = req.params.id
-            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.driver_id = $1", [id])
+            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано' AND a.driver_id = $1", [id])
             //const applications = await db.query("SELECT a.*, ai.purpose, ai.address, ai.date, ai.start_time, ai.finish_time, ai.user_id, ai.comment, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic, to_char(ai.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at FROM applications a JOIN application_items ai ON a.appl_items_id = ai.id JOIN  users d ON a.driver_id = d.id JOIN users u ON ai.user_id = u.id WHERE user_id = $1", [id])
             if (applications.rows == '') {
                 return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
@@ -102,7 +102,7 @@ class AplicationController {
     async getAllApplBoss(req, res) { // Получение согласованных заявок начальником
         try {
             //const applications = await db.query("SELECT a.*, ai.purpose, ai.address, ai.date, ai.start_time, ai.finish_time, ai.user_id, ai.comment, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic, to_char(ai.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at FROM applications a JOIN application_items ai ON a.appl_items_id = ai.id JOIN  users d ON a.driver_id = d.id JOIN users u ON ai.user_id = u.id")
-            const applications = await db.query("SELECT a.*, to_char(date, 'DD-MM-YYYY') AS date, to_char(created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE")
+            const applications = await db.query("SELECT a.*, to_char(date, 'DD-MM-YYYY') AS date, to_char(created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано'")
             if (applications.rows == '') {
                 return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
             }
@@ -143,6 +143,22 @@ class AplicationController {
         } catch (err) {
             console.log(err)
             res.status(500).json({message: 'Не удалось согласовать заявку'})
+        }
+    }
+
+    async notApproveAppl(req,res) { //отказ в утверждении заявки
+        try {
+            const id = req.params.id
+            const {fail_comment} = req.body
+            const status = 'Отказано'
+            const approve = 'true'
+            const application = await db.query('UPDATE application SET approve = $1, status = $2, fail_comment = $3 WHERE id = $4 RETURNING *',
+            [approve, status, fail_comment, id])
+
+            res.json(application.rows[0])
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({message: 'Не удалось обработать заявку'})
         }
     }
 
