@@ -70,11 +70,17 @@ class UserController{
              })
 
             await db.query('INSERT INTO sessions (token, user_id) values ($1, $2)', [token, user.rows[0].id])
+
+            const image = await db.query('SELECT image FROM images WHERE user_id = $1', [user.rows[0].id])
+            // if (!image.rows[0]) {
+            //     image.rows[0] = 'null'
+            // }
+            const imageData = { ...image.rows[0]}
             
             const userData = { ...user.rows[0]}
             delete userData.password;
             
-            res.json({...userData,  token, message: 'Вход выполнен'})
+            res.json({...userData,  token, ...imageData, message: 'Вход выполнен'})
 
         } catch (err) {
             console.log(err)
@@ -183,6 +189,20 @@ class UserController{
         const user = await db.query('DELETE FROM users where id = $1', [id])
         res.json(user.rows[0])
     }
+
+    async getNews(req, res) { //Получение новостей
+        try {
+            const news = await db.query('SELECT * FROM news')
+            if (!news.rows) {
+                return res.status(404).json({message: 'Нет новостей'})
+            }
+            res.json(news.rows)
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({message: 'Неудалось получить новости'})
+        }
+    }
+
 }
 
 module.exports = new UserController()
