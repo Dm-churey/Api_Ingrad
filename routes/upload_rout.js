@@ -2,7 +2,7 @@ const Router = require('express');
 const router = new Router();
 const multer = require('multer');
 const checkAuth = require('../utils/checkAuth');
-const db = require('../db'); // Путь к вашему файлу конфигурации базы данных
+const db = require('../db');
 
 const storage = multer.diskStorage({
   destination: (_, __, cb) => {
@@ -15,21 +15,28 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post('/', checkAuth, upload.single('image'), async (req, res) => {
+router.patch('/', checkAuth, upload.single('image'), async (req, res) => {
   try {
-    const id = req.userId; // Предполагается, что user_id доступен через req.user после проверки аутентификации
+    const id = req.userId;
     const imagePath = `/uploads/${req.file.originalname}`;
 
     // Сохранение информации об изображении в базе данных
-    const query = 'INSERT INTO images(user_id, image) VALUES($1, $2) RETURNING *';
-    const values = [id, imagePath];
-    const result = await db.query(query, values);
+    //const query = 'INSERT INTO images(user_id, image) VALUES($1, $2) RETURNING *';
+    //const values = [id, imagePath];
+    //const result = await db.query(query, values);
+    const result = await db.query('UPDATE users SET image = $1 WHERE id = $2', [imagePath, id]);
 
-    res.json({ message: 'Изображение успешно загружено', imageId: result.rows[0].id });
+    //res.json({ message: 'Изображение успешно загружено', imageId: result.rows[0].id });
+    res.json({ message: 'Изображение успешно загружено' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Не удалось загрузить изображение' });
   }
+}, (err, req, res, next) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Ошибка при загрузке файла: ' + err.message });
+    }
 });
 
 module.exports = router;

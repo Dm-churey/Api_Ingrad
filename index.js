@@ -17,8 +17,9 @@ const app = express()
 app.use(express.json())
 app.use('/api', userRouter)
 app.use('/appl', applicationRouter)
-app.use('/uploads', express.static('uploads'))
 app.use('/upload', uploadRouter)
+app.use('/uploads', express.static('uploads'))
+
 
 
 // app.get('/', (req, res) => {

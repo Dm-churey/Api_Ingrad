@@ -71,16 +71,16 @@ class UserController{
 
             await db.query('INSERT INTO sessions (token, user_id) values ($1, $2)', [token, user.rows[0].id])
 
-            const image = await db.query('SELECT image FROM images WHERE user_id = $1', [user.rows[0].id])
-            // if (!image.rows[0]) {
-            //     image.rows[0] = 'null'
-            // }
-            const imageData = { ...image.rows[0]}
+            // const image = await db.query('SELECT image FROM images WHERE user_id = $1', [user.rows[0].id])
+            // // if (!image.rows[0]) {
+            // //     image.rows[0] = 'null'
+            // // }
+            // const imageData = { ...image.rows[0]}
             
             const userData = { ...user.rows[0]}
             delete userData.password;
             
-            res.json({...userData,  token, ...imageData, message: 'Вход выполнен'})
+            res.json({...userData,  token, message: 'Вход выполнен'})
 
         } catch (err) {
             console.log(err)
