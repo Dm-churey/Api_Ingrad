@@ -39,10 +39,11 @@ class AplicationController {
     async getMyAppl(req, res) { //Получение согласованных заявок заказчиком с заданным id
         try {
             const id = req.params.id
-            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано' AND a.user_id = $1", [id])
+            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id LEFT JOIN users d ON a.driver_id = d.id WHERE a.user_id = $1", [id])
+            //const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано' AND a.user_id = $1", [id])
             //const applications = await db.query("SELECT a.*, ai.purpose, ai.address, ai.date, ai.start_time, ai.finish_time, ai.user_id, ai.comment, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic, to_char(ai.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at FROM applications a JOIN application_items ai ON a.appl_items_id = ai.id JOIN  users d ON a.driver_id = d.id JOIN users u ON ai.user_id = u.id WHERE user_id = $1", [id])
             if (applications.rows == '') {
-                return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
+                return res.status(404).json({message: 'Нет заявок для данного пользователя'})
             }
             res.json(applications.rows)
         } catch (err) {
@@ -54,7 +55,7 @@ class AplicationController {
     async getApplDriver(req, res) { //Получение согласованных заявок назначеным водителем с заданным id
         try {
             const id = req.params.id
-            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано' AND a.driver_id = $1", [id])
+            const applications = await db.query("SELECT a.*, to_char(a.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic FROM application a JOIN users u ON a.user_id = u.id JOIN users d ON a.driver_id = d.id WHERE a.approve = TRUE AND a.status = 'Согласовано' AND a.driver_id = $1 OR a.approve = TRUE AND a.status = 'Подтверждено' AND a.driver_id = $1", [id])
             //const applications = await db.query("SELECT a.*, ai.purpose, ai.address, ai.date, ai.start_time, ai.finish_time, ai.user_id, ai.comment, u.name AS user_name, u.lastname AS user_lastname, u.patronymic AS user_patronymic, d.name AS driver_name, d.lastname AS driver_lastname, d.patronymic AS driver_patronymic, to_char(ai.date, 'DD-MM-YYYY') AS date, to_char(a.created_at, 'DD-MM-YYYY HH24:MI:SS') AS created_at FROM applications a JOIN application_items ai ON a.appl_items_id = ai.id JOIN  users d ON a.driver_id = d.id JOIN users u ON ai.user_id = u.id WHERE user_id = $1", [id])
             if (applications.rows == '') {
                 return res.status(404).json({message: 'Нет согласованных заявок для данного пользователя'})
@@ -63,6 +64,21 @@ class AplicationController {
         } catch (err) {
             console.log(err)
             res.status(500).json({message: 'Не удалось получить заявки'})
+        }
+    }
+
+    async acceptApplDriver(req, res) {
+        try {
+            const id = req.params.id
+            const status = 'Подтверждено'
+            const application = await db.query('UPDATE application SET  status = $1 WHERE id = $2 RETURNING *',
+            [status, id])
+
+            res.json(application.rows[0])
+
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({message: 'Не удалось подтвердить назначение'})
         }
     }
 

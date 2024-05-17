@@ -13,6 +13,7 @@ router.get('/applications/new/boss', checkAuth, applicationController.getNewAppl
 router.post('/applications', checkAuth, applicationCreateValidation, applicationController.createAppl)
 router.patch('/applications/approve/:id', applicationController.approveAppl)
 router.patch('/applications/not_approve/:id', applicationController.notApproveAppl)
+router.patch('/applications/accept/:id', applicationController.acceptApplDriver)
 router.patch('/applications/:id', checkAuth, applicationController.updateAppl)
 router.delete('/applications/:id', applicationController.deleteAppl)
 
